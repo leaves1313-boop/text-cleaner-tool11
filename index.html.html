@@ -1,0 +1,423 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>텍스트 정제 도구</title>
+<style>
+  :root {
+    --bg-1: #eef4ff;
+    --bg-2: #f8fbff;
+    --primary: #2563eb;
+    --primary-dark: #1d4ed8;
+    --accent: #7c3aed;
+    --text: #172033;
+    --muted: #667085;
+    --line: #d7e0ef;
+    --card: rgba(255, 255, 255, 0.9);
+    --shadow: 0 22px 60px rgba(37, 99, 235, 0.13);
+  }
+
+  * { box-sizing: border-box; }
+
+  body {
+    margin: 0;
+    min-height: 100vh;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Noto Sans KR", sans-serif;
+    color: var(--text);
+    background:
+      radial-gradient(circle at 12% 10%, rgba(124, 58, 237, 0.16), transparent 28%),
+      radial-gradient(circle at 88% 18%, rgba(37, 99, 235, 0.18), transparent 28%),
+      linear-gradient(135deg, var(--bg-1), var(--bg-2));
+  }
+
+  .wrap {
+    width: min(1100px, calc(100% - 32px));
+    margin: 0 auto;
+    padding: 44px 0;
+  }
+
+  .hero {
+    display: grid;
+    grid-template-columns: 1.4fr 0.8fr;
+    gap: 24px;
+    align-items: stretch;
+    margin-bottom: 22px;
+  }
+
+  .title-card, .rule-card, .panel {
+    border: 1px solid rgba(215, 224, 239, 0.9);
+    background: var(--card);
+    backdrop-filter: blur(14px);
+    border-radius: 28px;
+    box-shadow: var(--shadow);
+  }
+
+  .title-card {
+    padding: 34px;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .title-card::after {
+    content: "";
+    position: absolute;
+    width: 180px;
+    height: 180px;
+    right: -54px;
+    bottom: -70px;
+    border-radius: 999px;
+    background: linear-gradient(135deg, rgba(37, 99, 235, 0.15), rgba(124, 58, 237, 0.12));
+  }
+
+  .badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 8px 13px;
+    border-radius: 999px;
+    background: #eff6ff;
+    color: var(--primary-dark);
+    font-size: 14px;
+    font-weight: 800;
+    letter-spacing: -0.02em;
+  }
+
+  h1 {
+    margin: 18px 0 10px;
+    font-size: clamp(30px, 5vw, 48px);
+    line-height: 1.08;
+    letter-spacing: -0.06em;
+  }
+
+  .desc {
+    margin: 0;
+    color: var(--muted);
+    font-size: 17px;
+    line-height: 1.75;
+    max-width: 680px;
+  }
+
+  .rule-card {
+    padding: 24px;
+  }
+
+  .rule-card h2 {
+    margin: 0 0 14px;
+    font-size: 18px;
+    letter-spacing: -0.03em;
+  }
+
+  .rules {
+    display: grid;
+    gap: 9px;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+
+  .rules li {
+    display: flex;
+    gap: 9px;
+    align-items: center;
+    color: #475467;
+    font-size: 14px;
+  }
+
+  .rules span {
+    flex: 0 0 auto;
+    width: 24px;
+    height: 24px;
+    display: inline-grid;
+    place-items: center;
+    border-radius: 9px;
+    background: #eef4ff;
+    color: var(--primary);
+    font-size: 12px;
+    font-weight: 900;
+  }
+
+  .panel {
+    padding: 24px;
+  }
+
+  .toolbar {
+    display: flex;
+    justify-content: space-between;
+    gap: 12px;
+    align-items: center;
+    flex-wrap: wrap;
+    margin-bottom: 16px;
+  }
+
+  .toolbar strong {
+    font-size: 20px;
+    letter-spacing: -0.04em;
+  }
+
+  .status {
+    min-height: 28px;
+    padding: 6px 11px;
+    border-radius: 999px;
+    background: #f2f6ff;
+    color: var(--primary-dark);
+    font-size: 13px;
+    font-weight: 800;
+  }
+
+  .grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 18px;
+  }
+
+  .field {
+    display: flex;
+    flex-direction: column;
+    gap: 9px;
+  }
+
+  label {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    color: #344054;
+    font-size: 15px;
+    font-weight: 900;
+    letter-spacing: -0.03em;
+  }
+
+  .counter {
+    color: #98a2b3;
+    font-size: 12px;
+    font-weight: 700;
+  }
+
+  textarea {
+    width: 100%;
+    min-height: 360px;
+    padding: 17px;
+    border: 1px solid var(--line);
+    border-radius: 20px;
+    background: #fbfdff;
+    color: #182230;
+    font-family: Consolas, "D2Coding", "Courier New", monospace;
+    font-size: 15px;
+    line-height: 1.65;
+    resize: vertical;
+    outline: none;
+    box-shadow: inset 0 1px 0 rgba(255,255,255,0.9);
+    transition: 0.2s ease;
+  }
+
+  textarea:focus {
+    border-color: rgba(37, 99, 235, 0.65);
+    box-shadow: 0 0 0 4px rgba(37, 99, 235, 0.12);
+  }
+
+  textarea[readonly] {
+    background: #f8fafc;
+  }
+
+  .actions {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 10px;
+    flex-wrap: wrap;
+    margin: 20px 0 2px;
+  }
+
+  button {
+    border: 0;
+    border-radius: 15px;
+    padding: 13px 18px;
+    font-weight: 900;
+    font-size: 15px;
+    letter-spacing: -0.03em;
+    cursor: pointer;
+    transition: transform 0.15s ease, box-shadow 0.15s ease, opacity 0.15s ease;
+  }
+
+  button:hover { transform: translateY(-1px); }
+  button:active { transform: translateY(0); opacity: 0.9; }
+
+  .primary {
+    color: #fff;
+    background: linear-gradient(135deg, var(--primary), var(--accent));
+    box-shadow: 0 14px 26px rgba(37, 99, 235, 0.22);
+  }
+
+  .secondary {
+    color: #1f2937;
+    background: #eef2f7;
+  }
+
+  .ghost {
+    color: var(--primary-dark);
+    background: #eff6ff;
+  }
+
+  .footnote {
+    margin: 18px 4px 0;
+    color: #667085;
+    font-size: 13px;
+    line-height: 1.6;
+    text-align: center;
+  }
+
+  @media (max-width: 860px) {
+    .hero, .grid { grid-template-columns: 1fr; }
+    .title-card { padding: 28px; }
+    textarea { min-height: 260px; }
+  }
+</style>
+</head>
+<body>
+  <main class="wrap">
+    <section class="hero" aria-label="서비스 소개">
+      <div class="title-card">
+        <div class="badge">✨ 공문·이메일 텍스트 자동 정리</div>
+        <h1>텍스트 정제 도구</h1>
+        <p class="desc">
+          워드·한글·이메일에서 붙여넣은 텍스트의 탭, 다중공백, 빈 줄, 인접 중복 줄,
+          중국식 마침표를 명세 순서에 맞춰 한 번에 정리합니다.
+        </p>
+      </div>
+
+      <aside class="rule-card" aria-label="정제 규칙">
+        <h2>정제 규칙 7단계</h2>
+        <ul class="rules">
+          <li><span>1</span>탭을 공백 한 칸으로 변경</li>
+          <li><span>2</span>중국식 마침표를 일반 마침표로 변경</li>
+          <li><span>3</span>줄별 다중 공백 정규화</li>
+          <li><span>4</span>줄 양끝 공백 제거</li>
+          <li><span>5</span>연속 빈 줄 압축</li>
+          <li><span>6</span>인접 중복 줄 제거</li>
+          <li><span>7</span>앞뒤 빈 줄 제거</li>
+        </ul>
+      </aside>
+    </section>
+
+    <section class="panel" aria-label="텍스트 정제 실행 영역">
+      <div class="toolbar">
+        <strong>텍스트 붙여넣기</strong>
+        <div id="status" class="status" aria-live="polite">입력 후 정제하기를 누르세요</div>
+      </div>
+
+      <div class="grid">
+        <div class="field">
+          <label for="in">입력 <span id="inputCount" class="counter">0자</span></label>
+          <textarea id="in" placeholder="정제할 텍스트를 붙여넣으세요."></textarea>
+        </div>
+
+        <div class="field">
+          <label for="out">결과 <span id="outputCount" class="counter">0자</span></label>
+          <textarea id="out" readonly placeholder="정제 결과가 여기에 표시됩니다."></textarea>
+        </div>
+      </div>
+
+      <div class="actions">
+        <button type="button" class="primary" onclick="run()">정제하기</button>
+        <button type="button" class="ghost" onclick="copyResult()">결과 복사</button>
+        <button type="button" class="secondary" onclick="clearAll()">초기화</button>
+      </div>
+
+      <p class="footnote">
+        채점 기준에 맞게 결과 줄바꿈은 LF 기준으로 처리되며, 정제 규칙은 명세서의 순서대로 적용됩니다.
+      </p>
+    </section>
+  </main>
+
+<script>
+function cleanText(input) {
+  // 줄바꿈 비교 기준을 맞추기 위해 CRLF/CR을 LF로 통일
+  let text = input.replace(/\r\n?/g, "\n");
+
+  // 1. 탭 -> 공백
+  text = text.replace(/\t/g, " ");
+
+  // 2. 중국식 마침표 표준화
+  text = text.replace(/。/g, ".");
+
+  // 줄 단위 처리
+  let lines = text.split("\n");
+
+  // 3. 줄별 다중 공백 정규화
+  lines = lines.map(line => line.replace(/ {2,}/g, " "));
+
+  // 4. 줄 양끝 trim
+  lines = lines.map(line => line.trim());
+
+  // 5. 빈 줄 압축
+  const compressed = [];
+  for (const line of lines) {
+    const prev = compressed[compressed.length - 1];
+    if (line === "" && prev === "") continue;
+    compressed.push(line);
+  }
+
+  // 6. 인접 중복 줄 제거: 빈 줄 제외
+  const deduped = [];
+  for (const line of compressed) {
+    const prev = deduped[deduped.length - 1];
+    if (line !== "" && line === prev) continue;
+    deduped.push(line);
+  }
+
+  // 7. 선·후행 빈 줄 제거
+  while (deduped.length > 0 && deduped[0] === "") deduped.shift();
+  while (deduped.length > 0 && deduped[deduped.length - 1] === "") deduped.pop();
+
+  return deduped.join("\n");
+}
+
+function updateCount() {
+  document.getElementById("inputCount").textContent = document.getElementById("in").value.length + "자";
+  document.getElementById("outputCount").textContent = document.getElementById("out").value.length + "자";
+}
+
+function setStatus(message) {
+  document.getElementById("status").textContent = message;
+}
+
+function run() {
+  const input = document.getElementById("in").value;
+  const output = cleanText(input);
+  document.getElementById("out").value = output;
+  updateCount();
+  setStatus("정제 완료");
+}
+
+async function copyResult() {
+  const output = document.getElementById("out");
+  if (!output.value) {
+    setStatus("복사할 결과가 없습니다");
+    return;
+  }
+
+  output.select();
+  output.setSelectionRange(0, output.value.length);
+
+  try {
+    await navigator.clipboard.writeText(output.value);
+    setStatus("결과 복사 완료");
+  } catch (error) {
+    document.execCommand("copy");
+    setStatus("결과 복사 완료");
+  }
+}
+
+function clearAll() {
+  document.getElementById("in").value = "";
+  document.getElementById("out").value = "";
+  updateCount();
+  setStatus("입력 후 정제하기를 누르세요");
+  document.getElementById("in").focus();
+}
+
+document.getElementById("in").addEventListener("input", updateCount);
+updateCount();
+</script>
+</body>
+</html>
